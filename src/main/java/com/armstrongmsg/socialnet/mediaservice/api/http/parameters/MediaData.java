@@ -5,7 +5,7 @@ import java.util.Map;
 public class MediaData {
 	private String id;
 	private Map<String, String> metadata;
-	private String data;
+	private byte[] data;
 	
 	public String getId() {
 		return id;
@@ -15,7 +15,7 @@ public class MediaData {
 		return metadata;
 	}
 
-	public String getData() {
+	public byte[] getData() {
 		return data;
 	}
 }

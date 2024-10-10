@@ -30,7 +30,7 @@ public class MediaServiceApi {
 		return instance;
 	}
 
-	public void createMedia(String id, Map<String, String> metadata, String data) throws IOException {
+	public void createMedia(String id, Map<String, String> metadata, byte[] data) throws IOException {
 		if (!mediaExists(id)) {
 			createMediaInStorage(id, data);
 		}
@@ -41,14 +41,14 @@ public class MediaServiceApi {
 		return mediaFile.exists() && mediaFile.isFile();
 	}
 	
-	private void createMediaInStorage(String id, String data) throws IOException {
+	private void createMediaInStorage(String id, byte[] data) throws IOException {
 		File mediaFile = new File(mediaStorageDirectory + "/" + id);
 		mediaFile.createNewFile();
 		FileOutputStream stream = new FileOutputStream(mediaFile);
 		boolean successful = false;
 		
 		try {
-			stream.write(data.getBytes());
+			stream.write(data);
 			successful = true;
 		} finally {
 			stream.close();
@@ -59,20 +59,20 @@ public class MediaServiceApi {
 		}
 	}
 
-	public String getMediaData(String mediaId) throws IOException {
+	public byte[] getMediaData(String mediaId) throws IOException {
 		if (mediaExists(mediaId)) {
-			String mediaData = readMediaData(mediaId);
+			byte[] mediaData = readMediaData(mediaId);
 			return mediaData;
 		}
-		return "";
+		return new byte[]{};
 	}
 
-	private String readMediaData(String mediaId) throws IOException {
+	private byte[] readMediaData(String mediaId) throws IOException {
 		File mediaFile = new File(mediaStorageDirectory + "/" + mediaId);
 		FileInputStream inputStream = new FileInputStream(mediaFile);
 		
 		try {
-			return new String(inputStream.readAllBytes());
+			return inputStream.readAllBytes();
 		} finally {
 			inputStream.close();
 		}
