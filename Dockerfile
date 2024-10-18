@@ -1,14 +1,6 @@
-# TODO Check a better image to depend on
-FROM tomcat:9.0
+FROM maven
 
 WORKDIR /root
-
-RUN /usr/local/tomcat/bin/shutdown.sh
-
-RUN \
-  apt-get update -y && \
-  apt-get upgrade -y && \
-  apt-get install -y maven
 
 ADD pom.xml /root/pom.xml
 ADD mvnw /root
@@ -16,3 +8,5 @@ ADD .mvn/wrapper/maven-wrapper.properties /root/.mvn/wrapper/maven-wrapper.prope
 ADD target /root/target
 
 RUN mvn dependency:sources
+
+ENTRYPOINT [ "./mvnw", "spring-boot:run", "-X" ]
