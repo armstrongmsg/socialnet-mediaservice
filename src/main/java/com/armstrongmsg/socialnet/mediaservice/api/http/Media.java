@@ -36,16 +36,18 @@ public class Media {
 	}
 	
 	@RequestMapping(value = "/{mediaId}", method = RequestMethod.GET)
-	public ResponseEntity<Boolean> getMedia(HttpServletResponse response,
-			@PathVariable String mediaId) throws FatalErrorException, MediaNotFoundException, InternalErrorException {
+	public ResponseEntity<Boolean> getMedia(HttpServletResponse response, @PathVariable String mediaId)
+			throws FatalErrorException, MediaNotFoundException, InternalErrorException {
 		byte[] mediaData = MediaServiceApi.getInstance().getMediaData(mediaId);
-		 try (InputStream inputStream = new ByteArrayInputStream(mediaData)) {
-		        StreamUtils.copy(inputStream, response.getOutputStream());
-		        response.setContentType(MediaType.IMAGE_JPEG_VALUE);
-		    } catch (IOException e) {
-		        // handle
-		    }
-		
+		try (InputStream inputStream = new ByteArrayInputStream(mediaData)) {
+			StreamUtils.copy(inputStream, response.getOutputStream());
+			// FIXME should get the type of the image
+			response.setContentType(MediaType.IMAGE_JPEG_VALUE);
+		} catch (IOException e) {
+			// TODO message
+			throw new InternalErrorException();
+		}
+
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 	
