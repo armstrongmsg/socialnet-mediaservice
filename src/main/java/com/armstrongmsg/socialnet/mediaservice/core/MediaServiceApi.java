@@ -87,4 +87,18 @@ public class MediaServiceApi {
 			throw new MediaNotFoundException();
 		}
 	}
+
+	public void deleteMedia(String mediaId) throws MediaNotFoundException, InternalErrorException {
+		if (mediaUtil.mediaExists(mediaId)) {
+			try {
+				mediaUtil.deleteMedia(mediaId);
+			} catch (IOException e) {
+				// TODO message
+				throw new InternalErrorException();
+			}
+		} else {
+			// TODO message
+			throw new MediaNotFoundException();
+		}
+	}
 }

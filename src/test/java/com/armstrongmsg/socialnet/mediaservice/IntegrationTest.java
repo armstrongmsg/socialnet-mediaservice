@@ -119,6 +119,31 @@ public class IntegrationTest extends PersistenceTest {
 		MediaServiceApi.getInstance(mediaUtils).getMediaData(MEDIA_ID_1);
 	}
 	
+	@Test
+	public void testDeleteMedia() throws FileNotFoundException, IOException, MediaAlreadyExistsException, InternalErrorException, 
+			FatalErrorException, MediaNotFoundException {
+		byte[] testPictureData = getTestPictureData(TEST_PICTURE_FILE_PATH_1);
+		
+		MediaServiceApi.getInstance().createMedia(MEDIA_ID_1, metadata, testPictureData);
+		
+		MediaServiceApi.getInstance().deleteMedia(MEDIA_ID_1);
+		
+		assertFalse(new File(PersistenceTest.TEST_DIRECTORY + File.separator + MEDIA_ID_1).exists());
+	}
+	
+	@Test(expected = MediaNotFoundException.class)
+	public void testCannotDeleteNonExistentMedia() throws MediaNotFoundException, InternalErrorException, FatalErrorException {
+		MediaServiceApi.getInstance().deleteMedia("invalid-id");
+	}
+	
+	@Test(expected = InternalErrorException.class)
+	public void testErrorOnMediaDeletion() throws IOException, MediaNotFoundException, InternalErrorException, FatalErrorException {
+		Mockito.when(mediaUtils.mediaExists(MEDIA_ID_1)).thenReturn(true);
+		Mockito.doThrow(IOException.class).when(mediaUtils).deleteMedia(MEDIA_ID_1);
+		
+		MediaServiceApi.getInstance(mediaUtils).deleteMedia(MEDIA_ID_1);
+	}
+	
 	@After
 	public void tearDown() throws IOException {
 		MediaServiceApi.reset();

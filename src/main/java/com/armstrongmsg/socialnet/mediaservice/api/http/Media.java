@@ -48,4 +48,11 @@ public class Media {
 		
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
+	
+	@RequestMapping(value = "/{mediaId}", method = RequestMethod.DELETE)
+	public ResponseEntity<Boolean> deleteMedia(
+			@PathVariable String mediaId) throws FatalErrorException, MediaNotFoundException, InternalErrorException {
+		MediaServiceApi.getInstance().deleteMedia(mediaId);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
 }
