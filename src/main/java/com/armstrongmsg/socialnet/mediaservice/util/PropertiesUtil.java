@@ -5,9 +5,14 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.armstrongmsg.socialnet.mediaservice.constants.Messages;
 import com.armstrongmsg.socialnet.mediaservice.exceptions.FatalErrorException;
 
 public class PropertiesUtil {
+	private static Logger logger = LoggerFactory.getLogger(PropertiesUtil.class);
 	private static PropertiesUtil instance;
 	
 	private Properties properties;
@@ -17,11 +22,13 @@ public class PropertiesUtil {
 			try {
 				instance = new PropertiesUtil();
 			} catch (FileNotFoundException e) {
-				// TODO add message
-				throw new FatalErrorException();
+				logger.error(Messages.Logging.COULD_NOT_LOAD_ADMIN_CONFIGURATION, e.getMessage());
+				throw new FatalErrorException(
+						String.format(Messages.Exception.COULD_NOT_LOAD_ADMIN_CONFIGURATION, e.getMessage()));
 			} catch (IOException e) {
-				// TODO add message
-				throw new FatalErrorException();
+				logger.error(Messages.Logging.COULD_NOT_LOAD_ADMIN_CONFIGURATION, e.getMessage());
+				throw new FatalErrorException(
+						String.format(Messages.Exception.COULD_NOT_LOAD_ADMIN_CONFIGURATION, e.getMessage()));
 			}
 		}
 		

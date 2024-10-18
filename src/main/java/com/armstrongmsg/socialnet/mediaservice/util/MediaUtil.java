@@ -49,8 +49,7 @@ public class MediaUtil {
 	public void deleteMedia(String mediaId) throws IOException {
 		File mediaFile = new File(mediaStorageDirectory + File.separator + mediaId);
 		if (!mediaFile.delete()) {
-			// TODO constant
-			throw new IOException("Media could not be deleted.");
+			throw new IOException();
 		}
 	}
 }
