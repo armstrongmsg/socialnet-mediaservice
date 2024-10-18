@@ -1,26 +1,51 @@
 package com.armstrongmsg.socialnet.mediaservice.core;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Map;
 
+import com.armstrongmsg.socialnet.mediaservice.constants.ConfigurationProperties;
 import com.armstrongmsg.socialnet.mediaservice.exceptions.FatalErrorException;
+import com.armstrongmsg.socialnet.mediaservice.exceptions.InternalErrorException;
+import com.armstrongmsg.socialnet.mediaservice.exceptions.MediaAlreadyExistsException;
+import com.armstrongmsg.socialnet.mediaservice.exceptions.MediaNotFoundException;
+import com.armstrongmsg.socialnet.mediaservice.util.MediaUtil;
 import com.armstrongmsg.socialnet.mediaservice.util.PropertiesUtil;
 
 public class MediaServiceApi {
 	private static MediaServiceApi instance;
 	private String mediaStorageDirectory;
+	private MediaUtil mediaUtil;
 	
 	private MediaServiceApi() throws FatalErrorException {
-		// FIXME constant
-		this.mediaStorageDirectory = PropertiesUtil.getInstance().getProperty("MEDIA_STORAGE_DIRECTORY");
+		this.mediaStorageDirectory = PropertiesUtil.getInstance().
+				getProperty(ConfigurationProperties.MEDIA_STORAGE_DIRECTORY);
 		File storageDirectory = new File(mediaStorageDirectory);
+		mediaUtil = new MediaUtil(mediaStorageDirectory);
 		
 		if (!storageDirectory.exists()) {
 			storageDirectory.mkdir();
 		}
+	}
+	
+	private MediaServiceApi(MediaUtil mediaUtil) throws FatalErrorException {
+		this.mediaUtil = mediaUtil;
+		
+		this.mediaStorageDirectory = PropertiesUtil.getInstance().
+				getProperty(ConfigurationProperties.MEDIA_STORAGE_DIRECTORY);
+		File storageDirectory = new File(mediaStorageDirectory);
+		mediaUtil = new MediaUtil(mediaStorageDirectory);
+		
+		if (!storageDirectory.exists()) {
+			storageDirectory.mkdir();
+		}
+	}
+	
+	public static MediaServiceApi getInstance(MediaUtil mediaUtils) throws FatalErrorException {
+		if (instance == null) {
+			instance = new MediaServiceApi(mediaUtils);
+		}
+		return instance;
 	}
 	
 	public static MediaServiceApi getInstance() throws FatalErrorException {
@@ -29,52 +54,37 @@ public class MediaServiceApi {
 		}
 		return instance;
 	}
-
-	public void createMedia(String id, Map<String, String> metadata, byte[] data) throws IOException {
-		if (!mediaExists(id)) {
-			createMediaInStorage(id, data);
-		}
-	}
-
-	private boolean mediaExists(String id) {
-		File mediaFile = new File(mediaStorageDirectory + "/" + id);
-		return mediaFile.exists() && mediaFile.isFile();
-	}
 	
-	private void createMediaInStorage(String id, byte[] data) throws IOException {
-		File mediaFile = new File(mediaStorageDirectory + "/" + id);
-		mediaFile.createNewFile();
-		FileOutputStream stream = new FileOutputStream(mediaFile);
-		boolean successful = false;
-		
-		try {
-			stream.write(data);
-			successful = true;
-		} finally {
-			stream.close();
-			
-			if (!successful) {
-				mediaFile.delete();
+	public static void reset() {
+		instance = null;
+	}
+
+	public void createMedia(String id, Map<String, String> metadata, byte[] data) throws MediaAlreadyExistsException, InternalErrorException {
+		if (mediaUtil.mediaExists(id)) {
+			// TODO add message
+			throw new MediaAlreadyExistsException();
+		} else {
+			try {
+				mediaUtil.createMediaInStorage(id, data);
+			} catch (IOException e) {
+				// TODO message
+				throw new InternalErrorException();
 			}
 		}
 	}
 
-	public byte[] getMediaData(String mediaId) throws IOException {
-		if (mediaExists(mediaId)) {
-			byte[] mediaData = readMediaData(mediaId);
-			return mediaData;
-		}
-		return new byte[]{};
-	}
-
-	private byte[] readMediaData(String mediaId) throws IOException {
-		File mediaFile = new File(mediaStorageDirectory + "/" + mediaId);
-		FileInputStream inputStream = new FileInputStream(mediaFile);
-		
-		try {
-			return inputStream.readAllBytes();
-		} finally {
-			inputStream.close();
+	public byte[] getMediaData(String mediaId) throws MediaNotFoundException, InternalErrorException {
+		if (mediaUtil.mediaExists(mediaId)) {
+			try {
+				byte[] mediaData = mediaUtil.readMediaData(mediaId);
+				return mediaData;
+			} catch (IOException e) {
+				// TODO message
+				throw new InternalErrorException();
+			}
+		} else {
+			// TODO message
+			throw new MediaNotFoundException();
 		}
 	}
 }
